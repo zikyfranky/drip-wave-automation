@@ -3,7 +3,7 @@ import { exec } from 'child_process';
 import { getAssignedIssues, forkRepo } from './github';
 import { run, query } from './database';
 import { runSniperScan } from './sniper';
-import { syncDripsStatus, syncAppliedOutcomes } from './status-sync';
+import { syncDripsStatus, syncAppliedOutcomes, pruneStaleOpportunities } from './status-sync';
 import { notifyAssigned } from './notify';
 import path from 'path';
 
@@ -58,6 +58,7 @@ export function startCron() {
 
             await syncDripsStatus();
             await syncAppliedOutcomes();
+            await pruneStaleOpportunities();
         } catch (err) {
             console.error('Cron error:', err);
         }

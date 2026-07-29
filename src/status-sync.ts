@@ -88,3 +88,31 @@ export async function syncAppliedOutcomes() {
         console.log(`Status sync: ${assignedCount} issue(s) confirmed ASSIGNED, ${lostCount} marked LOST`);
     }
 }
+
+/**
+ * Removes still-PENDING Sniper Feed rows for issues that got scooped up (assigned to
+ * someone else) or closed out before we ever applied - unlike syncAppliedOutcomes,
+ * there's no application of ours to track an outcome for, so these are just deleted
+ * rather than moved to LOST, keeping the feed showing only genuinely open issues.
+ */
+export async function pruneStaleOpportunities() {
+    const pending = await query(
+        `SELECT id, drip_issue_id FROM applications
+         WHERE status = 'PENDING' AND drip_issue_id IS NOT NULL`
+    );
+
+    let removed = 0;
+    for (const app of pending) {
+        const issue = await getIssueById(app.drip_issue_id);
+        const isStale = !issue || issue.state === 'closed' || Boolean(issue.assignedApplicant) ||
+            Boolean(issue.resolvedInWave) || Boolean(issue.completedAt);
+        if (!isStale) continue;
+
+        await run(`DELETE FROM applications WHERE id = ?`, [app.id]);
+        removed++;
+    }
+
+    if (removed > 0) {
+        console.log(`Status sync: removed ${removed} stale opportunit${removed === 1 ? 'y' : 'ies'} from the feed`);
+    }
+}
