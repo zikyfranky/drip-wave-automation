@@ -31,7 +31,7 @@ export function startCron() {
 
                 const exists = await query('SELECT status FROM applications WHERE github_url = ?', [issue.html_url]);
 
-                if (exists.length === 0 || exists[0].status === 'PENDING') {
+                if (exists.length === 0 || ['PENDING', 'APPLIED'].includes(exists[0].status)) {
                     console.log(`New assignment: ${repo} #${issueId}`);
 
                     await forkRepo(owner, repo);

@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
-import { query } from './database';
+import { query, run } from './database';
 import { startCron } from './cron';
 import { runSniperScan } from './sniper';
 
@@ -37,6 +37,24 @@ app.get('/api/applications', async (req, res) => {
         res.json(apps);
     } catch (err) {
         res.status(500).json({ error: 'Database error' });
+    }
+});
+
+// You clicked Apply on Drips yourself - this just stops the Sniper Feed from
+// nagging you about an opportunity you've already acted on.
+app.post('/api/applications/:id/mark-applied', async (req, res) => {
+    try {
+        const result = await run(
+            `UPDATE applications SET status = 'APPLIED', applied_manually_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+             WHERE id = ? AND status = 'PENDING'`,
+            [req.params.id]
+        );
+        if (result.changes === 0) {
+            return res.status(404).json({ error: 'Not found or not in PENDING state' });
+        }
+        res.json({ success: true });
+    } catch (err: any) {
+        res.status(500).json({ error: 'Database error', details: err.message });
     }
 });
 
