@@ -186,6 +186,7 @@
     </main>
 
     
+    
     <script>
         async function triggerScan() {
             const btn = event.target;
@@ -195,9 +196,9 @@
             try {
                 const res = await fetch('/api/sniper/scan', { method: 'POST' });
                 await res.json();
-                alert('Scan complete.');
+                alert('Scan logic complete.');
                 refreshData();
-            } catch (e) { alert('Scan error'); }
+            } catch (e) { alert('Scan failed'); }
             btn.innerText = originalText;
             btn.disabled = false;
         }
@@ -206,11 +207,11 @@
             try {
                 const res = await fetch('/api/snipe/' + id, { method: 'POST' });
                 const data = await res.json();
-                alert('Snipe Result: ' + data.status);
+                alert('Sniper Result: ' + data.status);
+                refreshData();
             } catch (e) { alert('Snipe failed'); }
         }
 
-        
         async function refreshData() {
             try {
                 const resStats = await fetch('/api/analytics');
@@ -224,11 +225,9 @@
                 const resApps = await fetch('/api/applications');
                 const apps = await resApps.json();
                 
-                console.log('Syncing ' + apps.length + ' issues.');
-
-                // 1. Sniper Feed (Showing ONLY PENDING)
+                // Sniper Feed (Only PENDING)
                 const sniperList = document.getElementById('apps-list');
-                const sniperApps = apps.filter(a => a.status === 'PENDING' || a.status === 'pending');
+                const sniperApps = apps.filter(a => a.status.toUpperCase() === 'PENDING');
                 
                 if (sniperApps.length === 0) {
                     sniperList.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-slate-500">Sniper Feed empty. Click Scan Now.</td></tr>';
@@ -241,9 +240,11 @@
                                     <span class="text-[10px] text-slate-500 font-mono">${app.github_url.split('/').slice(-2).join('/')}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-6 text-xs text-slate-400 italic">${app.pitch ? (app.pitch.substring(0, 60) + '...') : 'Drafting pitch...'}</td>
+                            <td class="px-6 py-6 text-xs text-slate-400 italic">
+                                ${app.pitch ? (app.pitch.substring(0, 60) + '...') : 'Pitch drafting...'}
+                            </td>
                             <td class="px-6 py-6 text-right flex items-center justify-end space-x-2">
-                                <button onclick="snipe(${app.id})" class="text-[10px] bg-amber-600 hover:bg-amber-500 text-white px-3 py-2 rounded-lg font-bold transition-all shadow-lg scale-90 hover:scale-100">SNIPE</button>
+                                <button onclick="snipe(${app.id})" class="text-[10px] bg-amber-600 hover:bg-amber-500 text-white px-3 py-2 rounded-lg font-bold transition-all shadow-lg">SNIPE</button>
                                 <a href="${app.github_url}" target="_blank" class="h-8 w-8 glass flex items-center justify-center rounded-lg hover:bg-indigo-600 hover:text-white transition-all text-xs">
                                     <i class="fab fa-github"></i>
                                 </a>
@@ -252,16 +253,16 @@
                     `).join('');
                 }
 
-                // 2. Active Pipeline (Showing ONLY ASSIGNED/WORKING)
+                // Active Pipeline (Only ASSIGNED/WORKING)
                 const activeList = document.getElementById('pipeline-list');
                 if (activeList) {
-                    const activeApps = apps.filter(a => a.status === 'ASSIGNED' || a.status === 'ASSIGNED_MIMS' || a.status === 'WORKING');
+                    const activeApps = apps.filter(a => ['ASSIGNED', 'WORKING'].includes(a.status.toUpperCase()));
                     if (activeApps.length === 0) {
-                         activeList.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500 text-xs italic">No confirmed assignments in the pipeline.</td></tr>';
+                         activeList.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500 text-xs italic">No confirmed assignments.</td></tr>';
                     } else {
                          activeList.innerHTML = activeApps.map(app => `
                             <tr class="border-t border-slate-800 bg-indigo-500/5">
-                                <td class="px-8 py-4 text-sm font-bold text-indigo-300">#${app.id} | ${app.title}</td>
+                                <td class="px-8 py-4 text-sm font-bold text-indigo-300">${app.title}</td>
                                 <td class="px-6 py-4 text-xs uppercase font-black text-indigo-500 tracking-widest">${app.status}</td>
                                 <td class="px-6 py-4 text-right">
                                     <a href="${app.github_url}" target="_blank" class="text-indigo-400 hover:text-white"><i class="fas fa-external-link-alt"></i></a>
@@ -270,51 +271,15 @@
                          `).join('');
                     }
                 }
-            } catch (e) { console.error('Dashboard Sync Error', e); }
-        }
- else {
-                    sniperList.innerHTML = sniperApps.map(app => `
-                        <tr class="group border-t border-slate-800 hover:bg-white/5 transition-colors">
-                            <td class="px-8 py-6">
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-bold text-white">${app.title}</span>
-                                    <span class="text-[10px] text-slate-500 font-medium">${new Date(app.applied_at).toLocaleString()}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-6 text-xs text-slate-400 italic">${app.pitch ? (app.pitch.substring(0, 50) + '...') : 'Drafting...'}</td>
-                            <td class="px-6 py-6 text-right flex items-center justify-end space-x-2">
-                                <button onclick="snipe(${app.id})" class="text-[10px] bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-lg font-bold transition-all shadow-lg">SNIPE</button>
-                                <a href="${app.github_url}" target="_blank" class="h-8 w-8 glass flex items-center justify-center rounded-lg hover:bg-indigo-600 hover:text-white transition-all text-xs">
-                                    <i class="fab fa-github"></i>
-                                </a>
-                            </td>
-                        </tr>
-                    `).join('');
-                }
-
-                const activeList = document.getElementById('pipeline-list');
-                if (activeList) {
-                    const activeApps = apps.filter(a => a.status === 'ASSIGNED' || a.status === 'WORKING');
-                    if (activeApps.length === 0) {
-                         activeList.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500 text-xs text-slate-400">0 active assignments.</td></tr>';
-                    } else {
-                         activeList.innerHTML = activeApps.map(app => `
-                            <tr class="border-t border-slate-800 bg-indigo-500/5">
-                                <td class="px-8 py-4 text-sm font-bold text-indigo-300">#${app.id} | ${app.title}</td>
-                                <td class="px-6 py-4 text-xs uppercase font-bold text-indigo-500">${app.status}</td>
-                                <td class="px-6 py-4 text-right">
-                                    <a href="${app.github_url}" target="_blank" class="text-indigo-400 hover:text-white"><i class="fas fa-external-link-alt"></i></a>
-                                </td>
-                            </tr>
-                         `).join('');
-                    }
-                }
-            } catch (e) { console.error('Refresh Sync Error', e); }
+            } catch (e) {
+                console.error('Refresh Sync Error', e);
+            }
         }
 
         refreshData();
         setInterval(refreshData, 30000);
     </script>
+
 
 </body>
 </html>
