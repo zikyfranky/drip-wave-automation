@@ -20,10 +20,10 @@ app.get('/api/analytics', async (req, res) => {
     try {
         const stats = await query(`
             SELECT 
-                COUNT(*) as total_apps,
-                SUM(CASE WHEN status = 'ASSIGNED' THEN 1 ELSE 0 END) as assigned,
-                SUM(CASE WHEN status = 'EARNED' THEN 1 ELSE 0 END) as earned,
-                SUM(CASE WHEN status = 'EARNED' THEN points ELSE 0 END) as total_points
+                COUNT(*) as total_apps, 
+                SUM(CASE WHEN UPPER(status) = 'ASSIGNED' THEN 1 ELSE 0 END) as assigned, 
+                SUM(CASE WHEN UPPER(status) = 'EARNED' THEN 1 ELSE 0 END) as earned, 
+                SUM(CASE WHEN UPPER(status) = 'EARNED' THEN points ELSE 0 END) as total_points 
             FROM applications
         `);
         res.json(stats[0] || {});
@@ -41,22 +41,11 @@ app.get('/api/applications', async (req, res) => {
     }
 });
 
-app.get('/api/opportunities', async (req, res) => {
-    try {
-        const ops = await query('SELECT * FROM applications WHERE status = "PENDING" ORDER BY points DESC');
-        res.json(ops);
-    } catch (err) {
-        res.status(500).json({ error: 'Database error' });
-    }
-});
-
 app.post('/api/sniper/scan', async (req, res) => {
     try {
-        console.log('Manual scan triggered...');
-        const stats = await runSniperScan();
-        res.json(stats || { success: true });
+        await runSniperScan();
+        res.json({ success: true });
     } catch (err) {
-        console.error('Scan failed:', err);
         res.status(500).json({ error: 'Scan failed', details: err.message });
     }
 });
@@ -67,13 +56,13 @@ app.post('/api/snipe/:id', async (req, res) => {
         const rows = await query('SELECT * FROM applications WHERE id = ?', [id]);
         if (!rows.length) return res.status(404).json({ error: 'Not found' });
         
-        const issueId = rows[0].github_url.split('/').pop();
-        const result = await snipeIssue(issueId, rows[0].pitch);
+        // Use the Drip Issue UUID from the DB
+        const result = await snipeIssue(rows[0].drip_issue_id, rows[0].pitch);
         
         res.json({ status: result });
     } catch (e) {
-        console.error('Snipe API error:', e);
-        res.status(500).json({ error: 'Snipe failed' });
+        console.error('Snipe API Error:', e);
+        res.status(500).json({ error: 'Snipe engine error' });
     }
 });
 
@@ -82,5 +71,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log('Drip Wave Hub running on port ' + port);
+    console.log('Drip Wave Command Center live on ' + port);
 });

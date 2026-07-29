@@ -135,6 +135,7 @@
                     sniperList.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-slate-500 text-sm">No new potential jobs. Click Scan Now.</td></tr>';
                 } else {
                     sniperList.innerHTML = pendingIssues.map(app => `
+                        
                         <tr class="group border-t border-slate-800 hover:bg-white/5 transition-colors">
                             <td class="px-8 py-6">
                                 <div class="flex flex-col">
@@ -143,15 +144,19 @@
                                 </div>
                             </td>
                             <td class="px-6 py-6 text-[11px] text-slate-400 italic font-medium w-96 leading-relaxed">
-                                "${app.pitch ? app.pitch : 'Pitch is currently being drafted by isaac-core...'}"
+                                "${app.pitch ? app.pitch : 'Pitch drafting...'}"
                             </td>
                             <td class="px-6 py-6 text-right flex items-center justify-end space-x-3">
                                 <button onclick="snipe(${app.id})" class="text-[10px] bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg font-black tracking-widest shadow-xl">SNIPE</button>
-                                <a href="${app.github_url}" target="_blank" class="h-9 w-9 glass flex items-center justify-center rounded-xl text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all">
+                                <a href="https://www.drips.network/wave/stellar/issue/${app.github_url.split('/').pop()}" target="_blank" class="h-9 w-9 glass flex items-center justify-center rounded-xl text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all text-xs" title="View on Drips">
+                                    <i class="fas fa-droplet"></i>
+                                </a>
+                                <a href="${app.github_url}" target="_blank" class="h-9 w-9 glass flex items-center justify-center rounded-xl text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all text-xs" title="View on GitHub">
                                     <i class="fab fa-github"></i>
                                 </a>
                             </td>
                         </tr>
+
                     `).join('');
                 }
 
