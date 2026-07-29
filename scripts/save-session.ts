@@ -12,22 +12,21 @@ async function save() {
     });
     
     const page = await browser.newPage();
-    // Updated to the direct login route
     await page.goto('https://www.drips.network/wave/login', { waitUntil: 'networkidle2' });
     
-    console.log('Please log in manually in the browser window.');
-    console.log('Once you are logged in and see the dashboard, come back here.');
-    
-    try {
-        // Wait for the user to login - looking for evidence of a session
-        await page.waitForFunction(
-            () => document.body.innerText.includes('Logout') || 
-                  document.body.innerText.includes('Connected') || 
-                  window.location.href.includes('/dashboard'),
-            { timeout: 0 }
-        );
-        
-        console.log('Login detected! Saving session...');
+    console.log('--- SESSION SAVER ---');
+    console.log('1. Log in manually in the browser window.');
+    console.log('2. Once finished, COME BACK TO THIS TERMINAL and press ENTER.');
+    console.log('---------------------');
+
+    // Use readline to wait for manual trigger since SPA states are tricky
+    const readline = require('readline').createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    readline.question('Press ENTER here after you have logged in and are on the dashboard...', async () => {
+        console.log('Capturing cookies...');
         const cookies = await page.cookies();
         
         const dir = path.dirname(COOKIES_PATH);
@@ -35,13 +34,11 @@ async function save() {
         
         fs.writeFileSync(COOKIES_PATH, JSON.stringify(cookies, null, 2));
         console.log(`Done! Session saved to: ${COOKIES_PATH}`);
-        console.log('You can now upload this file to your server.');
-    } catch (err) {
-        console.error('Error during session save:', err);
-    } finally {
+        
+        readline.close();
         await browser.close();
         process.exit(0);
-    }
+    });
 }
 
 save();
