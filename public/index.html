@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drip Wave Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-12">
+            <div>
+                <h1 class="text-3xl font-bold text-white">Drip Wave <span class="text-indigo-500">Analytics</span></h1>
+                <p class="text-slate-400">Automated Bounty Tracker & Contributor Bot</p>
+            </div>
+            <div id="status-indicator" class="px-3 py-1 bg-green-900/50 text-green-400 rounded-full text-sm border border-green-800">
+                System Online
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <p class="text-slate-400 text-sm">Total Applications</p>
+                <h2 id="total-apps" class="text-4xl font-bold mt-2">0</h2>
+            </div>
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <p class="text-slate-400 text-sm">Current Assignments</p>
+                <h2 id="assigned" class="text-4xl font-bold mt-2 text-indigo-400">0</h2>
+            </div>
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <p class="text-slate-400 text-sm">Issues Fixed</p>
+                <h2 id="earned-count" class="text-4xl font-bold mt-2 text-green-400">0</h2>
+            </div>
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <p class="text-slate-400 text-sm">Points Earned</p>
+                <h2 id="total-points" class="text-4xl font-bold mt-2 text-amber-400">0</h2>
+            </div>
+        </div>
+
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+            <div class="p-6 border-b border-slate-700 flex justify-between items-center">
+                <h3 class="font-bold">Active Workflow & History</h3>
+                <button onclick="refreshData()" class="text-sm text-slate-400 hover:text-white">Refresh Data</button>
+            </div>
+            <table class="w-full text-left">
+                <thead class="bg-slate-900/50 text-slate-400 text-xs uppercase">
+                    <tr>
+                        <th class="p-4">Issue Title</th>
+                        <th class="p-4">Points</th>
+                        <th class="p-4">Status</th>
+                        <th class="p-4">Applied At</th>
+                        <th class="p-4">Links</th>
+                    </tr>
+                </thead>
+                <tbody id="apps-list">
+                    <!-- Data injected here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        async function refreshData() {
+            const resStats = await fetch('/api/analytics');
+            const stats = await resStats.json();
+            document.getElementById('total-apps').innerText = stats.total_apps || 0;
+            document.getElementById('assigned').innerText = stats.assigned || 0;
+            document.getElementById('earned-count').innerText = stats.earned || 0;
+            document.getElementById('total-points').innerText = stats.total_points || 0;
+
+            const resApps = await fetch('/api/applications');
+            const apps = await resApps.json();
+            const list = document.getElementById('apps-list');
+            list.innerHTML = apps.map(app => `
+                <tr class="border-t border-slate-700/50">
+                    <td class="p-4 font-medium">${app.title}</td>
+                    <td class="p-4">${app.points}</td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 rounded text-xs ${getStatusClass(app.status)}">
+                            ${app.status}
+                        </span>
+                    </td>
+                    <td class="p-4 text-slate-400">${new Date(app.applied_at).toLocaleDateString()}</td>
+                    <td class="p-4 text-indigo-400 text-sm">
+                        <a href="${app.github_url}" target="_blank" class="hover:underline">GitHub Issue</a>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'PENDING': return 'bg-slate-700 text-slate-300';
+                case 'ASSIGNED': return 'bg-indigo-900 text-indigo-300';
+                case 'EARNED': return 'bg-green-900 text-green-300';
+                default: return 'bg-slate-700 text-slate-300';
+            }
+        }
+
+        refreshData();
+        setInterval(refreshData, 30000);
+    </script>
+</body>
+</html>
