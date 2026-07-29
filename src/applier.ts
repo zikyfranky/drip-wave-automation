@@ -1,64 +1,42 @@
-import puppeteer from 'puppeteer';
+
 import fs from 'fs';
 import path from 'path';
+import axios from 'axios';
 
 const COOKIES_PATH = path.resolve(__dirname, '../data/cookies.json');
 
 export async function snipeIssue(issueId: string, pitch: string) {
-    console.log(`[Sniper] Starting browser for issue ${issueId}...`);
-    const browser = await puppeteer.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-
+    console.log(`[Sniper API] Starting direct application for issue ${issueId}...`);
+    
     try {
-        const page = await browser.newPage();
+        if (!fs.existsSync(COOKIES_PATH)) throw new Error('No cookies.json found');
+        const cookies = JSON.parse(fs.readFileSync(COOKIES_PATH, 'utf8'));
         
-        if (fs.existsSync(COOKIES_PATH)) {
-            const cookies = JSON.parse(fs.readFileSync(COOKIES_PATH, 'utf8'));
-            await page.setCookie(...cookies);
-        } else {
-            throw new Error('No session cookies found.');
-        }
+        // Find the JWT from wave_access_token
+        const tokenCookie = cookies.find((c: any) => c.name === 'wave_access_token');
+        if (!tokenCookie) throw new Error('wave_access_token not found in cookies');
 
-        const url = `https://www.drips.network/wave/stellar/issue/${issueId}`;
-        await page.goto(url, { waitUntil: 'networkidle2' });
-
-        console.log('[Sniper] Searching for Apply button...');
-        // Wait for specific Drips components
-        await page.waitForSelector('button', { timeout: 10000 });
-
-        const applied = await page.evaluate(async (p) => {
-            const buttons = Array.from(document.querySelectorAll('button'));
-            const applyBtn = buttons.find(b => b.innerText.includes('Apply'));
-            
-            if (applyBtn) {
-                applyBtn.click();
-                // Custom sleep
-                await new Promise(r => setTimeout(r, 2000));
-                
-                const textarea = document.querySelector('textarea');
-                if (textarea) {
-                    (textarea as HTMLTextAreaElement).value = p;
-                    // Trigger change events
-                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                    
-                    const submitBtn = Array.from(document.querySelectorAll('button')).find(b => b.innerText.includes('Submit'));
-                    if (submitBtn) {
-                        // submitBtn.click(); // UNCOMMENT THIS FOR PRODUCTION
-                        return 'FORM_FILLED';
-                    }
-                }
+        // Note: Drips usually expects application through their REST API
+        // POST https://wave-api.drips.network/wave-programs/stellar/issues/{issueId}/apply
+        const url = `https://wave-api.drips.network/wave-programs/stellar/issues/${issueId}/apply`;
+        
+        const response = await axios.post(url, {
+            message: pitch
+        }, {
+            headers: {
+                'Authorization': `Bearer ${tokenCookie.value}`,
+                'Content-Type': 'application/json',
+                'Origin': 'https://www.drips.network',
+                'Referer': 'https://www.drips.network/'
             }
-            return 'NOT_FOUND';
-        }, pitch);
+        });
 
-        console.log(`[Sniper] Result: ${applied}`);
-        await browser.close();
-        return applied;
-    } catch (err) {
-        console.error('[Sniper] Fatal error:', err);
-        await browser.close();
-        return 'ERROR';
+        console.log('[Sniper API] Success:', response.data);
+        return 'SUCCESS';
+    } catch (err: any) {
+        console.error('[Sniper API] Error:', err.response?.data || err.message);
+        // If it returns a conflict, we might already have applied
+        if (err.response?.status === 409) return 'ALREADY_APPLIED';
+        return 'ERROR: ' + (err.response?.data?.message || err.message);
     }
 }
