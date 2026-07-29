@@ -227,16 +227,67 @@ async function snipe(id){ const res=await fetch("/api/snipe/"+id,{method:"POST"}
             }
         }
 
+        
         async function refreshData() {
             try {
                 const resStats = await fetch('/api/analytics');
                 const stats = await resStats.json();
-
+                
                 document.getElementById('total-apps').innerText = stats.total_apps || 0;
                 document.getElementById('assigned').innerText = stats.assigned || 0;
                 document.getElementById('earned-count').innerText = stats.earned || 0;
                 document.getElementById('total-points').innerText = stats.total_points || 0;
-                document.getElementById('success-rate').innerText = stats.success_rate !== null && stats.success_rate !== undefined ? `${stats.success_rate}%` : '—';
+
+                const resApps = await fetch('/api/applications');
+                const apps = await resApps.json();
+                
+                // Sniper Feed (PENDING)
+                const sniperList = document.getElementById('apps-list');
+                const sniperApps = apps.filter(a => a.status === 'PENDING');
+                
+                if (sniperApps.length === 0) {
+                    sniperList.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-slate-500">No new opportunities found yet.</td></tr>';
+                } else {
+                    sniperList.innerHTML = sniperApps.map(app => `
+                        <tr class="group border-t border-slate-800 hover:bg-white/5 transition-colors">
+                            <td class="px-8 py-6">
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-white">${app.title}</span>
+                                    <span class="text-[10px] text-slate-500 font-medium">${new Date(app.applied_at).toLocaleString()}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-6 text-xs text-slate-400 italic">${app.pitch ? (app.pitch.substring(0, 50) + '...') : 'Drafting...'}</td>
+                            <td class="px-6 py-6 text-right flex items-center justify-end space-x-2">
+                                <button onclick="snipe(${app.id})" class="text-[10px] bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-lg font-bold transition-all shadow-lg">SNIPE</button>
+                                <a href="${app.github_url}" target="_blank" class="h-8 w-8 glass flex items-center justify-center rounded-lg hover:bg-indigo-600 hover:text-white transition-all text-xs">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+
+                // Active Pipeline (ASSIGNED)
+                const activeList = document.getElementById('pipeline-list'); // Need to check if this ID exists
+                if (activeList) {
+                    const activeApps = apps.filter(a => a.status === 'ASSIGNED' || a.status === 'WORKING');
+                    if (activeApps.length === 0) {
+                         activeList.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500 text-xs">Working on 0 assignments.</td></tr>';
+                    } else {
+                         activeList.innerHTML = activeApps.map(app => `
+                            <tr class="border-t border-slate-800 bg-indigo-500/5">
+                                <td class="px-8 py-4 text-sm font-bold text-indigo-300">${app.title}</td>
+                                <td class="px-6 py-4 text-xs uppercase font-bold text-indigo-500">${app.status}</td>
+                                <td class="px-6 py-4 text-right">
+                                    <a href="${app.github_url}" target="_blank" class="text-indigo-400 hover:text-white transition-colors"><i class="fas fa-external-link-alt"></i></a>
+                                </td>
+                            </tr>
+                         `).join('');
+                    }
+                }
+            } catch (e) { console.error('Sync failed', e); }
+        }
+%` : '—';
                 document.getElementById('points-per-hour').innerText = stats.points_per_hour !== null && stats.points_per_hour !== undefined ? stats.points_per_hour : '—';
 
                 const resOpps = await fetch('/api/opportunities');
