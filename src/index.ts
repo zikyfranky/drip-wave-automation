@@ -1,9 +1,10 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
-import { query, run } from './database';
+import { query } from './database';
 import { startCron } from './cron';
 import { snipeIssue } from './applier';
+import { scanForOpportunities } from './sniper';
 
 dotenv.config();
 
@@ -33,6 +34,17 @@ app.get('/api/applications', async (req, res) => {
     }
 });
 
+// RESTORED: Scanner Trigger
+app.post('/api/sniper/scan', async (req, res) => {
+    try {
+        const stats = await scanForOpportunities();
+        res.json(stats);
+    } catch (err) {
+        console.error('Manual scan failed:', err);
+        res.status(500).json({ error: 'Scan failed' });
+    }
+});
+
 app.post('/api/snipe/:id', async (req, res) => {
     const id = req.params.id;
     try {
@@ -53,5 +65,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log('Drip Wave Dashboard running on port ' + port);
+    console.log('Drip Wave Hub running on port ' + port);
 });
