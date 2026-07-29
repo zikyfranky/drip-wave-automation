@@ -38,168 +38,71 @@
         </div>
     </nav>
 
+    
     <main class="pt-32 pb-20 px-8 max-w-7xl mx-auto">
-        <!-- Top Row Metrics -->
+        <!-- Dashboard Metrics -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-            <div class="glass p-6 rounded-3xl relative overflow-hidden group shadow-2xl">
-                <div class="absolute -right-4 -top-4 text-indigo-500/10 text-6xl group-hover:scale-110 transition-transform"><i class="fas fa-paper-plane"></i></div>
-                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Applied</p>
-                <h2 id="total-apps" class="text-4xl font-bold text-white">-</h2>
-                <div class="mt-4 flex items-center text-indigo-400 text-xs">
-                    <i class="fas fa-chart-line mr-1"></i> Active Intentions
-                </div>
-            </div>
-            
-            <div class="glass p-6 rounded-3xl relative overflow-hidden group shadow-2xl border-indigo-500/20">
-                <div class="absolute -right-4 -top-4 text-purple-500/10 text-6xl group-hover:scale-110 transition-transform"><i class="fas fa-hammer"></i></div>
-                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">In Progress</p>
-                <h2 id="assigned" class="text-4xl font-bold gradient-text">-</h2>
-                <div class="mt-4 flex items-center text-purple-400 text-xs">
-                    <i class="fas fa-code-branch mr-1"></i> Forked & Ready
-                </div>
-            </div>
-
-            <div class="glass p-6 rounded-3xl relative overflow-hidden group shadow-2xl border-green-500/20">
-                <div class="absolute -right-4 -top-4 text-green-500/10 text-6xl group-hover:scale-110 transition-transform"><i class="fas fa-check-double"></i></div>
-                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Completed</p>
-                <h2 id="earned-count" class="text-4xl font-bold text-green-400">-</h2>
-                <div class="mt-4 flex items-center text-green-500 text-xs">
-                    <i class="fas fa-award mr-1"></i> Points Secured
-                </div>
-            </div>
-
-            <div class="glass p-6 rounded-3xl relative overflow-hidden group shadow-2xl border-amber-500/20">
-                <div class="absolute -right-4 -top-4 text-amber-500/10 text-6xl group-hover:scale-110 transition-transform"><i class="fas fa-database"></i></div>
-                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Points Earned</p>
-                <div class="flex items-baseline space-x-2">
-                    <h2 id="total-points" class="text-4xl font-bold text-amber-400">-</h2>
-                    <span class="text-amber-500/50 text-sm font-bold tracking-tighter uppercase">Pts</span>
-                </div>
-                <div class="mt-4 flex items-center text-amber-400 text-xs">
-                    <i class="fas fa-coins mr-1"></i> Confirmed Rewards
-                </div>
-            </div>
+            <div class="glass p-6 rounded-3xl"><p class="text-slate-400 text-xs uppercase mb-1">Found</p><h2 id="total-apps" class="text-4xl font-bold text-white">0</h2></div>
+            <div class="glass p-6 rounded-3xl"><p class="text-slate-400 text-xs uppercase mb-1">Assigned</p><h2 id="assigned" class="text-4xl font-bold text-indigo-400">0</h2></div>
+            <div class="glass p-6 rounded-3xl"><p class="text-slate-400 text-xs uppercase mb-1">Earned</p><h2 id="earned-count" class="text-4xl font-bold text-green-400">0</h2></div>
+            <div class="glass p-6 rounded-3xl"><p class="text-slate-400 text-xs uppercase mb-1">Points</p><h2 id="total-points" class="text-4xl font-bold text-amber-500">0</h2></div>
         </div>
 
-        <!-- Secondary Metrics -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div class="glass p-5 rounded-2xl flex items-center justify-between">
-                <div>
-                    <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Success Rate</p>
-                    <h3 id="success-rate" class="text-2xl font-bold text-white">-</h3>
-                </div>
-                <i class="fas fa-bullseye text-2xl text-indigo-500/40"></i>
+        <!-- 1. ACTIVE PIPELINE SECTION -->
+        <div class="glass rounded-3xl overflow-hidden mb-10 border border-indigo-500/30">
+            <div class="bg-indigo-500/10 p-6 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-indigo-300"><i class="fas fa-microchip mr-3"></i> Confirmed Work (Active Pipeline)</h3>
             </div>
-            <div class="glass p-5 rounded-2xl flex items-center justify-between">
-                <div>
-                    <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Points / Hour</p>
-                    <h3 id="points-per-hour" class="text-2xl font-bold text-white">-</h3>
-                </div>
-                <i class="fas fa-gauge-high text-2xl text-purple-500/40"></i>
-            </div>
-            <div class="glass p-5 rounded-2xl flex items-center justify-between">
-                <div>
-                    <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Open Opportunities</p>
-                    <h3 id="opportunity-count" class="text-2xl font-bold text-white">-</h3>
-                </div>
-                <i class="fas fa-crosshairs text-2xl text-amber-500/40"></i>
-            </div>
+            <table class="w-full text-left">
+                <thead class="bg-slate-900/40 text-[10px] uppercase text-slate-500 font-bold">
+                    <tr class="border-b border-slate-800">
+                        <th class="p-6">Project / Issue</th>
+                        <th class="p-6">Status</th>
+                        <th class="p-6 text-right">GitHub</th>
+                    </tr>
+                </thead>
+                <tbody id="pipeline-list">
+                    <tr><td colspan="3" class="p-12 text-center text-slate-500">Scanning for assignments...</td></tr>
+                </tbody>
+            </table>
         </div>
 
-        <!-- Main Content Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Workflow Table -->
-            <div class="lg:col-span-2 space-y-6">
-                <div class="glass rounded-3xl overflow-hidden shadow-2xl">
-                    <div class="bg-white/5 p-6 flex justify-between items-center">
-                        <h3 class="text-lg font-bold flex items-center">
-                            <i class="fas fa-list-check mr-3 text-indigo-500"></i> Active Pipelines
-                        </h3>
-                        <div class="flex space-x-2">
-                             <button onclick="refreshData()" class="text-xs bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-full transition-colors font-medium">
-                                <i class="fas fa-rotate mr-2"></i> Sync
-                             </button>
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="text-[11px] uppercase tracking-widest text-slate-500 font-bold bg-slate-900/40">
-                                <tr>
-                                    <th class="px-8 py-4">Resource / Issue</th>
-                                    <th class="px-6 py-4">Difficulty</th>
-                                    <th class="px-6 py-4">Current Status</th>
-                                    <th class="px-6 py-4">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="apps-list">
-                                <!-- Row Template -->
-                                <tr><td colspan="4" class="p-12 text-center text-slate-500">Polling system data...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Sniper Feed -->
-                <div class="glass rounded-3xl overflow-hidden shadow-2xl">
-                    <div class="bg-white/5 p-6 flex justify-between items-center">
-                        <h3 class="text-lg font-bold flex items-center">
-                            <i class="fas fa-crosshairs mr-3 text-amber-500"></i> Sniper Feed
-                        </h3>
-                        <button onclick="triggerScan()" id="scan-btn" class="text-xs bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-full transition-colors font-medium">
-                            <i class="fas fa-satellite-dish mr-2"></i> Scan Now
-                        </button>
-                    </div>
-                    <div class="p-4 space-y-3" id="opportunities-list">
-                        <div class="p-12 text-center text-slate-500">Scanning Drips Wave for opportunities...</div>
-                    </div>
-                </div>
+        <!-- 2. SNIPER FEED SECTION -->
+        <div class="glass rounded-3xl overflow-hidden mb-10">
+            <div class="bg-white/5 p-6 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white"><i class="fas fa-crosshairs mr-3"></i> Potential Jobs (Sniper Feed)</h3>
+                <button onclick="triggerScan()" class="text-xs bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-full font-bold transition-all">SCAN NOW</button>
             </div>
-
-            <!-- Side Cards -->
-            <div class="space-y-6">
-                <!-- Automation Activity -->
-                <div class="glass p-6 rounded-3xl shadow-2xl">
-                    <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6">Automation Log</h3>
-                    <div class="space-y-6" id="log-feed">
-                        <div class="flex space-x-4">
-                            <div class="mt-1 h-2 w-2 rounded-full bg-indigo-500 ring-4 ring-indigo-500/10"></div>
-                            <div>
-                                <p class="text-sm text-white font-medium">Dashboard Re-initialized</p>
-                                <p class="text-xs text-slate-500">v1.2.0 UI components loaded successfully.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- GitHub Status Card -->
-                <div class="bg-gradient-to-br from-indigo-900/50 to-slate-900 glass p-8 rounded-3xl border-indigo-500/20">
-                    <div class="flex items-center justify-between mb-6">
-                        <i class="fab fa-github text-3xl"></i>
-                        <span class="text-[10px] bg-green-900/50 text-green-400 px-2 py-1 rounded-full">API OK</span>
-                    </div>
-                    <p class="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-2">Syncing User</p>
-                    <h4 class="text-xl font-bold">zikyfranky</h4>
-                    <p class="text-sm text-slate-400 mt-1">Tracking all assigned open source bounties across 12 targeted ecosystems.</p>
-                </div>
-            </div>
+            <table class="w-full text-left">
+                <thead class="bg-slate-900/40 text-[10px] uppercase text-slate-500 font-bold">
+                    <tr class="border-b border-slate-800">
+                        <th class="p-6">Target Details</th>
+                        <th class="p-6">Pitch Preview</th>
+                        <th class="p-6 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="apps-list">
+                    <tr><td colspan="3" class="p-12 text-center text-slate-500 text-xs italic">Loading scanner data...</td></tr>
+                </tbody>
+            </table>
         </div>
     </main>
 
+
+    
     
     
     <script>
         async function triggerScan() {
             const btn = event.target;
-            const originalText = btn.innerText;
             btn.innerText = 'Scanning...';
             btn.disabled = true;
             try {
-                const res = await fetch('/api/sniper/scan', { method: 'POST' });
-                await res.json();
-                alert('Scan logic complete.');
+                await fetch('/api/sniper/scan', { method: 'POST' });
+                alert('Scan initiated. Data will update shortly.');
                 refreshData();
             } catch (e) { alert('Scan failed'); }
-            btn.innerText = originalText;
+            btn.innerText = 'SCAN NOW';
             btn.disabled = false;
         }
 
@@ -209,30 +112,29 @@
                 const data = await res.json();
                 alert('Sniper Result: ' + data.status);
                 refreshData();
-            } catch (e) { alert('Snipe failed'); }
+            } catch (e) { alert('Snipe engine error'); }
         }
 
         async function refreshData() {
             try {
-                const resStats = await fetch('/api/analytics');
-                const stats = await resStats.json();
-                
+                // Analytics
+                const stats = await (await fetch('/api/analytics')).json();
                 document.getElementById('total-apps').innerText = stats.total_apps || 0;
                 document.getElementById('assigned').innerText = stats.assigned || 0;
                 document.getElementById('earned-count').innerText = stats.earned || 0;
                 document.getElementById('total-points').innerText = stats.total_points || 0;
 
-                const resApps = await fetch('/api/applications');
-                const apps = await resApps.json();
+                // Issues
+                const apps = await (await fetch('/api/applications')).json();
                 
-                // Sniper Feed (Only PENDING)
+                // --- 1. SNIPER FEED (Status PENDING only) ---
                 const sniperList = document.getElementById('apps-list');
-                const sniperApps = apps.filter(a => a.status.toUpperCase() === 'PENDING');
+                const pendingIssues = apps.filter(a => a.status.toUpperCase() === 'PENDING');
                 
-                if (sniperApps.length === 0) {
-                    sniperList.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-slate-500">Sniper Feed empty. Click Scan Now.</td></tr>';
+                if (pendingIssues.length === 0) {
+                    sniperList.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-slate-500 text-sm">No new potential jobs. Click Scan Now.</td></tr>';
                 } else {
-                    sniperList.innerHTML = sniperApps.map(app => `
+                    sniperList.innerHTML = pendingIssues.map(app => `
                         <tr class="group border-t border-slate-800 hover:bg-white/5 transition-colors">
                             <td class="px-8 py-6">
                                 <div class="flex flex-col">
@@ -240,12 +142,12 @@
                                     <span class="text-[10px] text-slate-500 font-mono">${app.github_url.split('/').slice(-2).join('/')}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-6 text-xs text-slate-400 italic">
-                                ${app.pitch ? (app.pitch.substring(0, 60) + '...') : 'Pitch drafting...'}
+                            <td class="px-6 py-6 text-[11px] text-slate-400 italic font-medium w-96 leading-relaxed">
+                                "${app.pitch ? app.pitch : 'Pitch is currently being drafted by isaac-core...'}"
                             </td>
-                            <td class="px-6 py-6 text-right flex items-center justify-end space-x-2">
-                                <button onclick="snipe(${app.id})" class="text-[10px] bg-amber-600 hover:bg-amber-500 text-white px-3 py-2 rounded-lg font-bold transition-all shadow-lg">SNIPE</button>
-                                <a href="${app.github_url}" target="_blank" class="h-8 w-8 glass flex items-center justify-center rounded-lg hover:bg-indigo-600 hover:text-white transition-all text-xs">
+                            <td class="px-6 py-6 text-right flex items-center justify-end space-x-3">
+                                <button onclick="snipe(${app.id})" class="text-[10px] bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg font-black tracking-widest shadow-xl">SNIPE</button>
+                                <a href="${app.github_url}" target="_blank" class="h-9 w-9 glass flex items-center justify-center rounded-xl text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all">
                                     <i class="fab fa-github"></i>
                                 </a>
                             </td>
@@ -253,32 +155,34 @@
                     `).join('');
                 }
 
-                // Active Pipeline (Only ASSIGNED/WORKING)
-                const activeList = document.getElementById('pipeline-list');
-                if (activeList) {
-                    const activeApps = apps.filter(a => ['ASSIGNED', 'WORKING'].includes(a.status.toUpperCase()));
-                    if (activeApps.length === 0) {
-                         activeList.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500 text-xs italic">No confirmed assignments.</td></tr>';
-                    } else {
-                         activeList.innerHTML = activeApps.map(app => `
-                            <tr class="border-t border-slate-800 bg-indigo-500/5">
-                                <td class="px-8 py-4 text-sm font-bold text-indigo-300">${app.title}</td>
-                                <td class="px-6 py-4 text-xs uppercase font-black text-indigo-500 tracking-widest">${app.status}</td>
-                                <td class="px-6 py-4 text-right">
-                                    <a href="${app.github_url}" target="_blank" class="text-indigo-400 hover:text-white"><i class="fas fa-external-link-alt"></i></a>
-                                </td>
-                            </tr>
-                         `).join('');
-                    }
+                // --- 2. PIPELINE (Status ASSIGNED / WORKING only) ---
+                const pipelineList = document.getElementById('pipeline-list');
+                const workIssues = apps.filter(a => ['ASSIGNED', 'WORKING', 'ASSIGNED_MIMS'].includes(a.status.toUpperCase()));
+                
+                if (workIssues.length === 0) {
+                   pipelineList.innerHTML = '<tr><td colspan="3" class="p-12 text-center text-slate-600 text-xs italic">Waiting for your first assignment. Apply to some drips!</td></tr>';
+                } else {
+                   pipelineList.innerHTML = workIssues.map(app => `
+                        <tr class="group border-t border-indigo-900/30 bg-indigo-500/5 transition-colors">
+                            <td class="px-8 py-6">
+                                <div class="text-sm font-bold text-indigo-300">#${app.id} | ${app.title}</div>
+                            </td>
+                            <td class="px-6 py-6">
+                                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-indigo-900/50 text-indigo-300 border border-indigo-500/30">${app.status}</span>
+                            </td>
+                            <td class="px-6 py-6 text-right">
+                                <a href="${app.github_url}" target="_blank" class="text-indigo-400 hover:text-white text-lg"><i class="fas fa-external-link-alt"></i></a>
+                            </td>
+                        </tr>
+                   `).join('');
                 }
-            } catch (e) {
-                console.error('Refresh Sync Error', e);
-            }
+            } catch (e) { console.error('Dashboard Sync Error', e); }
         }
 
         refreshData();
         setInterval(refreshData, 30000);
     </script>
+
 
 
 </body>
