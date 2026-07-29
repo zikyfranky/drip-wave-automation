@@ -151,8 +151,10 @@
                                 "${app.pitch ? app.pitch : 'Pitch drafting...'}"
                             </td>
                             <td class="px-6 py-6 text-right flex items-center justify-end space-x-3">
-                                <a href="https://www.drips.network/wave/stellar/issues/${app.drip_issue_id}" target="_blank" class="text-[10px] bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-black tracking-widest shadow-xl">APPLY ON DRIPS</a>
-                                <a href="${app.github_url}" target="_blank" class="h-9 w-9 glass flex items-center justify-center rounded-xl text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all text-xs" title="View on GitHub">
+                                <a href="https://www.drips.network/wave/stellar/issues/${app.drip_issue_id}" target="_blank" class="h-11 w-11 glass flex items-center justify-center rounded-xl text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all text-lg" title="Apply on Drips">
+                                    <i class="fas fa-droplet"></i>
+                                </a>
+                                <a href="${app.github_url}" target="_blank" class="h-11 w-11 glass flex items-center justify-center rounded-xl text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all text-lg" title="View on GitHub">
                                     <i class="fab fa-github"></i>
                                 </a>
                                 <button onclick="markApplied(${app.id}, this)" title="Mark as applied" class="h-9 w-9 glass flex items-center justify-center rounded-xl text-slate-400 hover:bg-green-600 hover:text-white transition-all text-xs">
