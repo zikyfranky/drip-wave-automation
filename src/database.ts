@@ -22,7 +22,8 @@ const APPLICATION_COLUMNS: Record<string, string> = {
     notified_at: 'DATETIME',
     assigned_at: 'DATETIME',
     earned_at: 'DATETIME',
-    applied_manually_at: 'DATETIME'
+    applied_manually_at: 'DATETIME',
+    lost_at: 'DATETIME'
 };
 
 function initialize() {

@@ -20,7 +20,7 @@ app.get('/api/analytics', async (req, res) => {
         const stats = await query(`
             SELECT
                 COUNT(*) as total_apps,
-                SUM(CASE WHEN UPPER(status) IN ('APPLIED', 'ASSIGNED', 'EARNED') THEN 1 ELSE 0 END) as applied,
+                SUM(CASE WHEN UPPER(status) IN ('APPLIED', 'ASSIGNED', 'EARNED', 'LOST') THEN 1 ELSE 0 END) as applied,
                 SUM(CASE WHEN UPPER(status) = 'ASSIGNED' THEN 1 ELSE 0 END) as assigned,
                 SUM(CASE WHEN UPPER(status) = 'EARNED' THEN 1 ELSE 0 END) as earned,
                 SUM(CASE WHEN UPPER(status) = 'EARNED' THEN points ELSE 0 END) as total_points
@@ -52,6 +52,24 @@ app.post('/api/applications/:id/mark-applied', async (req, res) => {
         );
         if (result.changes === 0) {
             return res.status(404).json({ error: 'Not found or not in PENDING state' });
+        }
+        res.json({ success: true });
+    } catch (err: any) {
+        res.status(500).json({ error: 'Database error', details: err.message });
+    }
+});
+
+// Reverts a mistaken "mark as applied" (or a LOST call you disagree with) back to
+// PENDING so it reappears in the Sniper Feed.
+app.post('/api/applications/:id/undo-applied', async (req, res) => {
+    try {
+        const result = await run(
+            `UPDATE applications SET status = 'PENDING', applied_manually_at = NULL, lost_at = NULL, updated_at = CURRENT_TIMESTAMP
+             WHERE id = ? AND status IN ('APPLIED', 'LOST')`,
+            [req.params.id]
+        );
+        if (result.changes === 0) {
+            return res.status(404).json({ error: 'Not found or not in APPLIED/LOST state' });
         }
         res.json({ success: true });
     } catch (err: any) {

@@ -61,3 +61,9 @@ export async function notifyEarned(opts: { title: string; points: number; github
         [`💰 **Points earned!**`, `${opts.title} — +${opts.points} pts`, opts.githubIssueUrl].join('\n')
     );
 }
+
+export async function notifyLost(opts: { title: string; assignedTo: string; githubIssueUrl: string }) {
+    await broadcast(
+        [`😕 **Not picked**`, `${opts.title} went to ${opts.assignedTo}`, opts.githubIssueUrl].join('\n')
+    );
+}
