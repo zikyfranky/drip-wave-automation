@@ -18,11 +18,12 @@ startCron();
 app.get('/api/analytics', async (req, res) => {
     try {
         const stats = await query(`
-            SELECT 
-                COUNT(*) as total_apps, 
-                SUM(CASE WHEN UPPER(status) = 'ASSIGNED' THEN 1 ELSE 0 END) as assigned, 
-                SUM(CASE WHEN UPPER(status) = 'EARNED' THEN 1 ELSE 0 END) as earned, 
-                SUM(CASE WHEN UPPER(status) = 'EARNED' THEN points ELSE 0 END) as total_points 
+            SELECT
+                COUNT(*) as total_apps,
+                SUM(CASE WHEN UPPER(status) IN ('APPLIED', 'ASSIGNED', 'EARNED') THEN 1 ELSE 0 END) as applied,
+                SUM(CASE WHEN UPPER(status) = 'ASSIGNED' THEN 1 ELSE 0 END) as assigned,
+                SUM(CASE WHEN UPPER(status) = 'EARNED' THEN 1 ELSE 0 END) as earned,
+                SUM(CASE WHEN UPPER(status) = 'EARNED' THEN points ELSE 0 END) as total_points
             FROM applications
         `);
         res.json(stats[0] || {});

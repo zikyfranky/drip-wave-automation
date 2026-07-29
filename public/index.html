@@ -41,8 +41,9 @@
     
     <main class="pt-32 pb-20 px-8 max-w-7xl mx-auto">
         <!-- Dashboard Metrics -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-6 mb-10">
             <div class="glass p-6 rounded-3xl"><p class="text-slate-400 text-xs uppercase mb-1">Found</p><h2 id="total-apps" class="text-4xl font-bold text-white">0</h2></div>
+            <div class="glass p-6 rounded-3xl"><p class="text-slate-400 text-xs uppercase mb-1">Applied</p><h2 id="applied-count" class="text-4xl font-bold text-amber-400">0</h2></div>
             <div class="glass p-6 rounded-3xl"><p class="text-slate-400 text-xs uppercase mb-1">Assigned</p><h2 id="assigned" class="text-4xl font-bold text-indigo-400">0</h2></div>
             <div class="glass p-6 rounded-3xl"><p class="text-slate-400 text-xs uppercase mb-1">Earned</p><h2 id="earned-count" class="text-4xl font-bold text-green-400">0</h2></div>
             <div class="glass p-6 rounded-3xl"><p class="text-slate-400 text-xs uppercase mb-1">Points</p><h2 id="total-points" class="text-4xl font-bold text-amber-500">0</h2></div>
@@ -122,6 +123,7 @@
                 // Analytics
                 const stats = await (await fetch('/api/analytics')).json();
                 document.getElementById('total-apps').innerText = stats.total_apps || 0;
+                document.getElementById('applied-count').innerText = stats.applied || 0;
                 document.getElementById('assigned').innerText = stats.assigned || 0;
                 document.getElementById('earned-count').innerText = stats.earned || 0;
                 document.getElementById('total-points').innerText = stats.total_points || 0;
