@@ -106,15 +106,6 @@
             btn.disabled = false;
         }
 
-        async function snipe(id) {
-            try {
-                const res = await fetch('/api/snipe/' + id, { method: 'POST' });
-                const data = await res.json();
-                alert('Sniper Result: ' + data.status);
-                refreshData();
-            } catch (e) { alert('Snipe engine error'); }
-        }
-
         async function refreshData() {
             try {
                 // Analytics
@@ -147,10 +138,7 @@
                                 "${app.pitch ? app.pitch : 'Pitch drafting...'}"
                             </td>
                             <td class="px-6 py-6 text-right flex items-center justify-end space-x-3">
-                                <button onclick="snipe(${app.id})" class="text-[10px] bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-lg font-black tracking-widest shadow-xl">SNIPE</button>
-                                <a href="https://www.drips.network/wave/stellar/issues/${app.drip_issue_id}" target="_blank" class="h-9 w-9 glass flex items-center justify-center rounded-xl text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all text-xs" title="View on Drips">
-                                    <i class="fas fa-droplet"></i>
-                                </a>
+                                <a href="https://www.drips.network/wave/stellar/issues/${app.drip_issue_id}" target="_blank" class="text-[10px] bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-black tracking-widest shadow-xl">APPLY ON DRIPS</a>
                                 <a href="${app.github_url}" target="_blank" class="h-9 w-9 glass flex items-center justify-center rounded-xl text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all text-xs" title="View on GitHub">
                                     <i class="fab fa-github"></i>
                                 </a>

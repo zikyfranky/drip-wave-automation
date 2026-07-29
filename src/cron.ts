@@ -2,7 +2,6 @@ import cron from 'node-cron';
 import { exec } from 'child_process';
 import { getAssignedIssues, forkRepo } from './github';
 import { db, run, query } from './database';
-import { generatePitches } from './pitcher';
 import path from 'path';
 
 const WORKSPACE_DIR = '/home/zikyfranky-drip-wave/htdocs/drip-wave.zikyfranky.com/workspace';
@@ -39,9 +38,6 @@ export function startCron() {
                     }
                 }
             }
-
-            // 2. Generate Pitches for any new Pending issues
-            await generatePitches();
 
         } catch (err) {
             console.error('Cron error:', err);

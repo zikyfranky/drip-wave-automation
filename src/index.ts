@@ -1,9 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
-import { query, run } from './database';
+import { query } from './database';
 import { startCron } from './cron';
-import { snipeIssue } from './applier';
 import { runSniperScan } from './sniper';
 
 dotenv.config();
@@ -47,22 +46,6 @@ app.post('/api/sniper/scan', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: 'Scan failed', details: err.message });
-    }
-});
-
-app.post('/api/snipe/:id', async (req, res) => {
-    const id = req.params.id;
-    try {
-        const rows = await query('SELECT * FROM applications WHERE id = ?', [id]);
-        if (!rows.length) return res.status(404).json({ error: 'Not found' });
-        
-        // Use the Drip Issue UUID from the DB
-        const result = await snipeIssue(rows[0].drip_issue_id, rows[0].pitch);
-        
-        res.json({ status: result });
-    } catch (e) {
-        console.error('Snipe API Error:', e);
-        res.status(500).json({ error: 'Snipe engine error' });
     }
 });
 
