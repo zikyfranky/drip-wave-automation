@@ -185,49 +185,31 @@
         </div>
     </main>
 
+    
     <script>
-        function getStatusBadge(status) {
-            const styles = {
-                'PENDING': 'bg-slate-800 text-slate-400 border border-slate-700',
-                'ASSIGNED': 'bg-indigo-950 text-indigo-300 border border-indigo-500/30',
-                'WORKING': 'bg-purple-900/50 text-purple-300 border border-purple-500/30',
-                'EARNED': 'bg-green-950 text-green-300 border border-green-500/30'
-            };
-            return styles[status] || styles['PENDING'];
-        }
-
-        function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.innerText = str ?? '';
-            return div.innerHTML;
-        }
-
-        async function copyPitch(id, btn) {
-            const text = decodeURIComponent(btn.dataset.pitch);
-            await navigator.clipboard.writeText(text);
-            const original = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check mr-1"></i> Copied';
-            setTimeout(() => { btn.innerHTML = original; }, 1500);
-        }
-
         async function triggerScan() {
-            const btn = document.getElementById('scan-btn');
-            const original = btn.innerHTML;
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = 'Scanning...';
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Scanning...';
             try {
-                await fetch('/api/sniper/scan', { method: 'POST' });
-async function snipe(id){ const res=await fetch("/api/snipe/"+id,{method:"POST"}); const data=await res.json(); alert("Bot result: "+data.status); }
-                await refreshData();
-            } catch (e) {
-                console.error('Manual scan failed', e);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = original;
-            }
+                const res = await fetch('/api/sniper/scan', { method: 'POST' });
+                await res.json();
+                alert('Scan complete.');
+                refreshData();
+            } catch (e) { alert('Scan error'); }
+            btn.innerText = originalText;
+            btn.disabled = false;
         }
 
-        
+        async function snipe(id) {
+            try {
+                const res = await fetch('/api/snipe/' + id, { method: 'POST' });
+                const data = await res.json();
+                alert('Snipe Result: ' + data.status);
+            } catch (e) { alert('Snipe failed'); }
+        }
+
         async function refreshData() {
             try {
                 const resStats = await fetch('/api/analytics');
@@ -241,12 +223,11 @@ async function snipe(id){ const res=await fetch("/api/snipe/"+id,{method:"POST"}
                 const resApps = await fetch('/api/applications');
                 const apps = await resApps.json();
                 
-                // Sniper Feed (PENDING)
                 const sniperList = document.getElementById('apps-list');
                 const sniperApps = apps.filter(a => a.status === 'PENDING');
                 
                 if (sniperApps.length === 0) {
-                    sniperList.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-slate-500">No new opportunities found yet.</td></tr>';
+                    sniperList.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-slate-500">No new opportunities.</td></tr>';
                 } else {
                     sniperList.innerHTML = sniperApps.map(app => `
                         <tr class="group border-t border-slate-800 hover:bg-white/5 transition-colors">
@@ -267,110 +248,29 @@ async function snipe(id){ const res=await fetch("/api/snipe/"+id,{method:"POST"}
                     `).join('');
                 }
 
-                // Active Pipeline (ASSIGNED)
-                const activeList = document.getElementById('pipeline-list'); // Need to check if this ID exists
+                const activeList = document.getElementById('pipeline-list');
                 if (activeList) {
                     const activeApps = apps.filter(a => a.status === 'ASSIGNED' || a.status === 'WORKING');
                     if (activeApps.length === 0) {
-                         activeList.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500 text-xs">Working on 0 assignments.</td></tr>';
+                         activeList.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500 text-xs text-slate-400">0 active assignments.</td></tr>';
                     } else {
                          activeList.innerHTML = activeApps.map(app => `
                             <tr class="border-t border-slate-800 bg-indigo-500/5">
-                                <td class="px-8 py-4 text-sm font-bold text-indigo-300">${app.title}</td>
+                                <td class="px-8 py-4 text-sm font-bold text-indigo-300">#${app.id} | ${app.title}</td>
                                 <td class="px-6 py-4 text-xs uppercase font-bold text-indigo-500">${app.status}</td>
                                 <td class="px-6 py-4 text-right">
-                                    <a href="${app.github_url}" target="_blank" class="text-indigo-400 hover:text-white transition-colors"><i class="fas fa-external-link-alt"></i></a>
+                                    <a href="${app.github_url}" target="_blank" class="text-indigo-400 hover:text-white"><i class="fas fa-external-link-alt"></i></a>
                                 </td>
                             </tr>
                          `).join('');
                     }
                 }
-            } catch (e) { console.error('Sync failed', e); }
-        }
-%` : '—';
-                document.getElementById('points-per-hour').innerText = stats.points_per_hour !== null && stats.points_per_hour !== undefined ? stats.points_per_hour : '—';
-
-                const resOpps = await fetch('/api/opportunities');
-                const opportunities = await resOpps.json();
-                document.getElementById('opportunity-count').innerText = opportunities.length;
-                const oppList = document.getElementById('opportunities-list');
-
-                if (opportunities.length === 0) {
-                    oppList.innerHTML = '<div class="p-12 text-center text-slate-500">No open opportunities yet. The Sniper checks every 5 minutes.</div>';
-                } else {
-                    oppList.innerHTML = opportunities.map(opp => `
-                        <div class="bg-white/5 rounded-2xl p-5 border border-slate-800 hover:border-amber-500/30 transition-colors">
-                            <div class="flex justify-between items-start gap-4">
-                                <div>
-                                    <p class="text-sm font-bold text-white">${escapeHtml(opp.title)}</p>
-                                    <p class="text-xs text-slate-500 mt-1">${escapeHtml(opp.repo_full_name)}</p>
-                                </div>
-                                <div class="shrink-0 flex items-center gap-2">
-                                    <a href="${escapeHtml(opp.github_url)}" target="_blank" title="View on GitHub" class="h-9 w-9 glass flex items-center justify-center rounded-xl hover:bg-slate-700 transition-all">
-                                        <i class="fab fa-github"></i>
-                                    </a>
-                                    <a href="${escapeHtml(opp.apply_url)}" target="_blank" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-full font-medium whitespace-nowrap">
-                                        Apply on Drips <i class="fas fa-arrow-up-right-from-square ml-1"></i>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="flex flex-wrap gap-2 mt-3">
-                                <span class="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-amber-950 text-amber-300 border border-amber-500/30">${opp.points ?? '?'} pts</span>
-                                <span class="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">${escapeHtml(opp.complexity || 'unknown')}</span>
-                                <span class="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">${opp.pending_applications_count ?? 0} competing</span>
-                            </div>
-                            ${opp.pitch ? `
-                                <div class="mt-4 bg-slate-950/50 rounded-xl p-4 relative">
-                                    <p class="text-xs text-slate-400 leading-relaxed pr-8">${escapeHtml(opp.pitch)}</p>
-                                    <button onclick="copyPitch(${opp.id}, this)" data-pitch="${encodeURIComponent(opp.pitch)}" class="absolute top-3 right-3 text-slate-500 hover:text-white text-xs">
-                                        <i class="fas fa-copy"></i>
-                                    </button>
-                                </div>
-                            ` : ''}
-                        </div>
-                    `).join('');
-                }
-
-                const resApps = await fetch('/api/applications');
-                const apps = await resApps.json();
-                const list = document.getElementById('apps-list');
-                
-                if (apps.length === 0) {
-                    list.innerHTML = '<tr><td colspan="4" class="p-12 text-center text-slate-500">No active applications yet. Applying soon...</td></tr>';
-                    return;
-                }
-
-                list.innerHTML = apps.map(app => `
-                    <tr class="group border-t border-slate-800 hover:bg-white/5 transition-colors">
-                        <td class="px-8 py-6">
-                            <div class="flex flex-col">
-                                <span class="text-sm font-bold text-white">${app.title}</span>
-                                <span class="text-[10px] text-slate-500 font-medium">${new Date(app.applied_at).toLocaleString()}</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-6">
-                            <span class="text-xs font-bold text-slate-400">${app.points} Points</span>
-                        </td>
-                        <td class="px-6 py-6">
-                            <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusBadge(app.status)}">
-                                ${app.status}
-                            </span>
-                        </td>
-                        <td class="px-6 py-6 text-right flex items-center justify-end space-x-2"><button onclick="snipe(${app.id})" class="text-[10px] bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-lg font-bold transition-all shadow-lg">SNIPE</button>
-                            <a href="${app.github_url}" target="_blank" class="h-9 w-9 glass flex items-center justify-center rounded-xl hover:bg-indigo-600 hover:text-white transition-all">
-                                <i class="fab fa-github"></i>
-                            </a>
-                        </td>
-                    </tr>
-                `).join('');
-            } catch (e) {
-                console.error('Frontend sync failed', e);
-            }
+            } catch (e) { console.error('Refresh Sync Error', e); }
         }
 
-async function snipe(id){ const res=await fetch("/api/snipe/"+id,{method:"POST"}); const data=await res.json(); alert("Bot result: "+data.status); }
         refreshData();
-        setInterval(refreshData, 20000);
+        setInterval(refreshData, 30000);
     </script>
+
 </body>
 </html>
