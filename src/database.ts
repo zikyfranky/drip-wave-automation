@@ -12,6 +12,18 @@ export const db = new sqlite3.Database(dbPath, (err) => {
     }
 });
 
+const APPLICATION_COLUMNS: Record<string, string> = {
+    repo_full_name: 'TEXT',
+    complexity: 'TEXT',
+    wave_program: 'TEXT',
+    pending_applications_count: 'INTEGER',
+    pitch: 'TEXT',
+    apply_url: 'TEXT',
+    notified_at: 'DATETIME',
+    assigned_at: 'DATETIME',
+    earned_at: 'DATETIME'
+};
+
 function initialize() {
     db.serialize(() => {
         db.run(`
@@ -33,6 +45,22 @@ function initialize() {
                 value TEXT
             )
         `);
+
+        // Migrate in existing columns needed by the Drip Sniper / analytics features.
+        db.all(`PRAGMA table_info(applications)`, [], (err, rows: any[]) => {
+            if (err) {
+                console.error('Migration check failed:', err);
+                return;
+            }
+            const existing = new Set(rows.map((r) => r.name));
+            for (const [column, type] of Object.entries(APPLICATION_COLUMNS)) {
+                if (!existing.has(column)) {
+                    db.run(`ALTER TABLE applications ADD COLUMN ${column} ${type}`, (alterErr) => {
+                        if (alterErr) console.error(`Failed to add column ${column}:`, alterErr);
+                    });
+                }
+            }
+        });
     });
 }
 

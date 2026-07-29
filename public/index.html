@@ -70,14 +70,39 @@
 
             <div class="glass p-6 rounded-3xl relative overflow-hidden group shadow-2xl border-amber-500/20">
                 <div class="absolute -right-4 -top-4 text-amber-500/10 text-6xl group-hover:scale-110 transition-transform"><i class="fas fa-database"></i></div>
-                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Total Payout</p>
+                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Points Earned</p>
                 <div class="flex items-baseline space-x-2">
                     <h2 id="total-points" class="text-4xl font-bold text-amber-400">-</h2>
                     <span class="text-amber-500/50 text-sm font-bold tracking-tighter uppercase">Pts</span>
                 </div>
                 <div class="mt-4 flex items-center text-amber-400 text-xs">
-                    <i class="fas fa-coins mr-1"></i> Potential Rewards
+                    <i class="fas fa-coins mr-1"></i> Confirmed Rewards
                 </div>
+            </div>
+        </div>
+
+        <!-- Secondary Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="glass p-5 rounded-2xl flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Success Rate</p>
+                    <h3 id="success-rate" class="text-2xl font-bold text-white">-</h3>
+                </div>
+                <i class="fas fa-bullseye text-2xl text-indigo-500/40"></i>
+            </div>
+            <div class="glass p-5 rounded-2xl flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Points / Hour</p>
+                    <h3 id="points-per-hour" class="text-2xl font-bold text-white">-</h3>
+                </div>
+                <i class="fas fa-gauge-high text-2xl text-purple-500/40"></i>
+            </div>
+            <div class="glass p-5 rounded-2xl flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Open Opportunities</p>
+                    <h3 id="opportunity-count" class="text-2xl font-bold text-white">-</h3>
+                </div>
+                <i class="fas fa-crosshairs text-2xl text-amber-500/40"></i>
             </div>
         </div>
 
@@ -111,6 +136,21 @@
                                 <tr><td colspan="4" class="p-12 text-center text-slate-500">Polling system data...</td></tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- Sniper Feed -->
+                <div class="glass rounded-3xl overflow-hidden shadow-2xl">
+                    <div class="bg-white/5 p-6 flex justify-between items-center">
+                        <h3 class="text-lg font-bold flex items-center">
+                            <i class="fas fa-crosshairs mr-3 text-amber-500"></i> Sniper Feed
+                        </h3>
+                        <button onclick="triggerScan()" id="scan-btn" class="text-xs bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-full transition-colors font-medium">
+                            <i class="fas fa-satellite-dish mr-2"></i> Scan Now
+                        </button>
+                    </div>
+                    <div class="p-4 space-y-3" id="opportunities-list">
+                        <div class="p-12 text-center text-slate-500">Scanning Drips Wave for opportunities...</div>
                     </div>
                 </div>
             </div>
@@ -156,15 +196,83 @@
             return styles[status] || styles['PENDING'];
         }
 
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.innerText = str ?? '';
+            return div.innerHTML;
+        }
+
+        async function copyPitch(id, btn) {
+            const text = decodeURIComponent(btn.dataset.pitch);
+            await navigator.clipboard.writeText(text);
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check mr-1"></i> Copied';
+            setTimeout(() => { btn.innerHTML = original; }, 1500);
+        }
+
+        async function triggerScan() {
+            const btn = document.getElementById('scan-btn');
+            const original = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Scanning...';
+            try {
+                await fetch('/api/sniper/scan', { method: 'POST' });
+                await refreshData();
+            } catch (e) {
+                console.error('Manual scan failed', e);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = original;
+            }
+        }
+
         async function refreshData() {
             try {
                 const resStats = await fetch('/api/analytics');
                 const stats = await resStats.json();
-                
+
                 document.getElementById('total-apps').innerText = stats.total_apps || 0;
                 document.getElementById('assigned').innerText = stats.assigned || 0;
                 document.getElementById('earned-count').innerText = stats.earned || 0;
                 document.getElementById('total-points').innerText = stats.total_points || 0;
+                document.getElementById('success-rate').innerText = stats.success_rate !== null && stats.success_rate !== undefined ? `${stats.success_rate}%` : '—';
+                document.getElementById('points-per-hour').innerText = stats.points_per_hour !== null && stats.points_per_hour !== undefined ? stats.points_per_hour : '—';
+
+                const resOpps = await fetch('/api/opportunities');
+                const opportunities = await resOpps.json();
+                document.getElementById('opportunity-count').innerText = opportunities.length;
+                const oppList = document.getElementById('opportunities-list');
+
+                if (opportunities.length === 0) {
+                    oppList.innerHTML = '<div class="p-12 text-center text-slate-500">No open opportunities yet. The Sniper checks every 5 minutes.</div>';
+                } else {
+                    oppList.innerHTML = opportunities.map(opp => `
+                        <div class="bg-white/5 rounded-2xl p-5 border border-slate-800 hover:border-amber-500/30 transition-colors">
+                            <div class="flex justify-between items-start gap-4">
+                                <div>
+                                    <p class="text-sm font-bold text-white">${escapeHtml(opp.title)}</p>
+                                    <p class="text-xs text-slate-500 mt-1">${escapeHtml(opp.repo_full_name)}</p>
+                                </div>
+                                <a href="${escapeHtml(opp.apply_url)}" target="_blank" class="shrink-0 text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-full font-medium whitespace-nowrap">
+                                    View & Apply <i class="fas fa-arrow-up-right-from-square ml-1"></i>
+                                </a>
+                            </div>
+                            <div class="flex flex-wrap gap-2 mt-3">
+                                <span class="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-amber-950 text-amber-300 border border-amber-500/30">${opp.points ?? '?'} pts</span>
+                                <span class="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">${escapeHtml(opp.complexity || 'unknown')}</span>
+                                <span class="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">${opp.pending_applications_count ?? 0} competing</span>
+                            </div>
+                            ${opp.pitch ? `
+                                <div class="mt-4 bg-slate-950/50 rounded-xl p-4 relative">
+                                    <p class="text-xs text-slate-400 leading-relaxed pr-8">${escapeHtml(opp.pitch)}</p>
+                                    <button onclick="copyPitch(${opp.id}, this)" data-pitch="${encodeURIComponent(opp.pitch)}" class="absolute top-3 right-3 text-slate-500 hover:text-white text-xs">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('');
+                }
 
                 const resApps = await fetch('/api/applications');
                 const apps = await resApps.json();
