@@ -305,7 +305,7 @@ async function snipe(id){ const res=await fetch("/api/snipe/"+id,{method:"POST"}
                                 ${app.status}
                             </span>
                         </td>
-                        <td class="px-6 py-6 text-right flex items-center justify-end space-x-2"><button onclick="snipe(${a.id})" class="text-[10px] bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-lg font-bold transition-all shadow-lg">SNIPE</button>
+                        <td class="px-6 py-6 text-right flex items-center justify-end space-x-2"><button onclick="snipe(${app.id})" class="text-[10px] bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-lg font-bold transition-all shadow-lg">SNIPE</button>
                             <a href="${app.github_url}" target="_blank" class="h-9 w-9 glass flex items-center justify-center rounded-xl hover:bg-indigo-600 hover:text-white transition-all">
                                 <i class="fab fa-github"></i>
                             </a>
