@@ -12,15 +12,18 @@ async function save() {
     });
     
     const page = await browser.newPage();
-    await page.goto('https://app.drips.network/wave', { waitUntil: 'networkidle2' });
+    // Updated to the direct login route
+    await page.goto('https://www.drips.network/wave/login', { waitUntil: 'networkidle2' });
     
     console.log('Please log in manually in the browser window.');
     console.log('Once you are logged in and see the dashboard, come back here.');
     
-    // Wait for the user to login - we look for the Logout text or profile indicator
     try {
+        // Wait for the user to login - looking for evidence of a session
         await page.waitForFunction(
-            () => document.body.innerText.includes('Logout') || document.body.innerText.includes('Connected'),
+            () => document.body.innerText.includes('Logout') || 
+                  document.body.innerText.includes('Connected') || 
+                  window.location.href.includes('/dashboard'),
             { timeout: 0 }
         );
         
