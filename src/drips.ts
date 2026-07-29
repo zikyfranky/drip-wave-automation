@@ -112,6 +112,7 @@ export async function getIssueById(id: string): Promise<DripsIssue | null> {
 export function buildApplyLinks(issue: DripsIssue, waveProgramSlug: string) {
     return {
         githubIssueUrl: `${issue.repo.gitHubRepoUrl}/issues/${issue.gitHubIssueNumber}`,
-        wavePageUrl: `https://www.drips.network/wave/${waveProgramSlug}`
+        // The actual "Apply to work on this issue" button lives here, not on GitHub.
+        dripsIssueUrl: `https://www.drips.network/wave/${waveProgramSlug}/issues/${issue.id}`
     };
 }

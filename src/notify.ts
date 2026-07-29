@@ -37,14 +37,14 @@ export async function notifyNewOpportunity(opts: {
     points: number | null;
     complexity: string | null;
     pendingApplicationsCount: number;
-    githubIssueUrl: string;
+    dripsIssueUrl: string;
     pitch: string | null;
 }) {
     const lines = [
         `🎯 **New Drip Wave opportunity**`,
         `**${opts.title}** — ${opts.repoFullName}`,
         `Points: ${opts.points ?? '?'} | Complexity: ${opts.complexity ?? '?'} | Pending applicants: ${opts.pendingApplicationsCount}`,
-        opts.githubIssueUrl
+        opts.dripsIssueUrl
     ];
     if (opts.pitch) {
         lines.push('', '_Suggested pitch:_', opts.pitch);

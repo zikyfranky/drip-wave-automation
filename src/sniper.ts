@@ -53,10 +53,13 @@ export async function runSniperScan() {
 }
 
 async function recordOpportunity(issue: DripsIssue, waveProgramSlug: string) {
-    const { githubIssueUrl } = buildApplyLinks(issue, waveProgramSlug);
+    const { githubIssueUrl, dripsIssueUrl } = buildApplyLinks(issue, waveProgramSlug);
     const pitch = await generatePitch(issue, GITHUB_USERNAME);
 
     await run(
+        // github_url stays the GitHub link - cron.ts matches on it against the GitHub
+        // "assigned issues" poll to detect when this opportunity turns into a real
+        // assignment. apply_url is the Drips page, which is where Apply actually is.
         `INSERT INTO applications
             (drip_issue_id, github_url, title, points, status, repo_full_name, complexity,
              wave_program, pending_applications_count, pitch, apply_url, notified_at)
@@ -71,7 +74,7 @@ async function recordOpportunity(issue: DripsIssue, waveProgramSlug: string) {
             waveProgramSlug,
             issue.pendingApplicationsCount,
             pitch,
-            githubIssueUrl
+            dripsIssueUrl
         ]
     );
 
@@ -81,7 +84,7 @@ async function recordOpportunity(issue: DripsIssue, waveProgramSlug: string) {
         points: issue.points,
         complexity: issue.complexity,
         pendingApplicationsCount: issue.pendingApplicationsCount,
-        githubIssueUrl,
+        dripsIssueUrl,
         pitch
     });
 }
